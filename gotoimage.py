@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import io
 
-# Effect functions
+# Helper functions for effects
 def convert_to_grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -15,14 +15,12 @@ def convert_to_sketch(image):
     inverted_blur = 255 - blurred
     return cv2.divide(gray, inverted_blur, scale=256.0)
 
-def invert_colors(image):
-    return cv2.bitwise_not(image)
+def apply_blur(image, ksize):
+    ksize = max(1, ksize)
+    return cv2.GaussianBlur(image, (ksize, ksize), 0)
 
-def apply_blur(image):
-    return cv2.GaussianBlur(image, (15, 15), 0)
-
-def apply_canny_edges(image):
-    return cv2.Canny(image, 100, 200)
+def apply_canny_edges(image, threshold1, threshold2):
+    return cv2.Canny(image, threshold1, threshold2)
 
 def apply_sepia(image):
     kernel = np.array([[0.272, 0.534, 0.131],
@@ -30,29 +28,32 @@ def apply_sepia(image):
                        [0.393, 0.769, 0.189]])
     return cv2.transform(image, kernel)
 
-def adjust_brightness(image, beta=50):
+def adjust_brightness(image, beta):
     return cv2.convertScaleAbs(image, beta=beta)
 
-def adjust_contrast(image, alpha=1.5):
+def adjust_contrast(image, alpha):
     return cv2.convertScaleAbs(image, alpha=alpha)
 
-def cartoonify(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.medianBlur(gray, 5)
-    edges = cv2.adaptiveThreshold(blurred, 255,
-                                  cv2.ADAPTIVE_THRESH_MEAN_C,
-                                  cv2.THRESH_BINARY, 9, 10)
-    color = cv2.bilateralFilter(image, 9, 300, 300)
-    return cv2.bitwise_and(color, color, mask=edges)
+def rotate_image(image, angle):
+    h, w = image.shape[:2]
+    center = (w // 2, h // 2)
+    matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+    return cv2.warpAffine(image, matrix, (w, h))
+
+def flip_image(image, flip_code):
+    return cv2.flip(image, flip_code)
+
+def resize_image(image, width, height):
+    return cv2.resize(image, (width, height))
 
 # Main Streamlit app
 def main():
-    st.title("Comprehensive Image Modification App 🎨")
-    st.write("Upload an image, choose from a wide range of effects, and download the result!")
+    st.title("Advanced Image Modification App 🎨")
+    st.write("Upload an image, apply effects, customize controls, and download the result!")
 
     # File uploader
-    uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
-    
+    uploaded_file = st.file_uploader("Upload your image", type=["jpg", "jpeg", "png"])
+
     if uploaded_file is not None:
         # Read the image
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
@@ -63,37 +64,53 @@ def main():
         st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), channels="RGB")
 
         # Effect selection
+        st.subheader("Choose an Effect")
         effects = [
-            "Grayscale", "Sketch", "Invert Colors", "Blur",
-            "Canny Edges", "Sepia", "Brightness Adjustment",
-            "Contrast Adjustment", "Cartoonify"
+            "None", "Grayscale", "Sketch", "Blur", "Canny Edges",
+            "Sepia", "Brightness Adjustment", "Contrast Adjustment",
+            "Rotate", "Flip", "Resize"
         ]
-        effect = st.selectbox("Choose an effect", effects)
+        effect = st.selectbox("Effect", effects)
 
-        # Process image based on effect
-        if effect == "Grayscale":
-            processed_image = convert_to_grayscale(image)
-        elif effect == "Sketch":
-            processed_image = convert_to_sketch(image)
-        elif effect == "Invert Colors":
-            processed_image = invert_colors(image)
-        elif effect == "Blur":
-            processed_image = apply_blur(image)
+        # Additional customization options
+        if effect == "Blur":
+            ksize = st.slider("Blur Intensity", 1, 50, 5, step=2)
+            processed_image = apply_blur(image, ksize)
         elif effect == "Canny Edges":
-            processed_image = apply_canny_edges(image)
+            threshold1 = st.slider("Threshold 1", 0, 255, 100)
+            threshold2 = st.slider("Threshold 2", 0, 255, 200)
+            processed_image = apply_canny_edges(image, threshold1, threshold2)
         elif effect == "Sepia":
             processed_image = apply_sepia(image)
         elif effect == "Brightness Adjustment":
-            processed_image = adjust_brightness(image, beta=50)
+            beta = st.slider("Brightness Level", -100, 100, 0)
+            processed_image = adjust_brightness(image, beta)
         elif effect == "Contrast Adjustment":
-            processed_image = adjust_contrast(image, alpha=1.5)
-        elif effect == "Cartoonify":
-            processed_image = cartoonify(image)
+            alpha = st.slider("Contrast Level", 0.5, 3.0, 1.0)
+            processed_image = adjust_contrast(image, alpha)
+        elif effect == "Rotate":
+            angle = st.slider("Rotation Angle", -180, 180, 0)
+            processed_image = rotate_image(image, angle)
+        elif effect == "Flip":
+            flip_options = {"Horizontal": 1, "Vertical": 0, "Both": -1}
+            flip_direction = st.selectbox("Flip Direction", list(flip_options.keys()))
+            processed_image = flip_image(image, flip_options[flip_direction])
+        elif effect == "Resize":
+            width = st.number_input("Width", min_value=10, value=image.shape[1])
+            height = st.number_input("Height", min_value=10, value=image.shape[0])
+            if st.button("Resize"):
+                processed_image = resize_image(image, int(width), int(height))
+            else:
+                processed_image = image
+        elif effect == "Grayscale":
+            processed_image = convert_to_grayscale(image)
+        elif effect == "Sketch":
+            processed_image = convert_to_sketch(image)
         else:
-            st.warning("Effect not implemented!")
+            processed_image = image
 
         # Display processed image
-        st.subheader("Modified Image")
+        st.subheader("Processed Image")
         if effect in ["Grayscale", "Sketch", "Canny Edges"]:
             st.image(processed_image, channels="GRAY")
         else:
@@ -109,9 +126,9 @@ def main():
         buffer.seek(0)
 
         st.download_button(
-            label="Download Modified Image",
+            label="Download Processed Image",
             data=buffer,
-            file_name="modified_image.png",
+            file_name="processed_image.png",
             mime="image/png"
         )
 
