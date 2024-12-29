@@ -30,13 +30,6 @@ def flip_image(image, mode):
         return cv2.flip(image, 0)
     return image
 
-def add_text_overlay(image, text, position, font_size, color):
-    pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    draw = ImageDraw.Draw(pil_image)
-    font = ImageFont.truetype("arial.ttf", font_size)
-    draw.text(position, text, fill=color, font=font)
-    return cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
-
 # Helper Functions for Image Compressor
 def compress_image(image, quality, format_type):
     buffer = io.BytesIO()
@@ -68,7 +61,7 @@ def modify_image():
         # User Enhancement Options
         enhancements = st.multiselect(
             "Select Enhancements",
-            ["Grayscale", "Sketch", "Blur", "Canny Edges", "Brightness", "Contrast", "Rotate", "Flip", "Add Text"]
+            ["Grayscale", "Sketch", "Blur", "Canny Edges", "Brightness", "Contrast", "Rotate", "Flip"]
         )
 
         processed_image = image
@@ -108,14 +101,6 @@ def modify_image():
             flip_mode = st.radio("Flip Mode", ["None", "Horizontal", "Vertical"])
             if flip_mode != "None":
                 processed_image = flip_image(processed_image, flip_mode)
-        
-        if "Add Text" in enhancements:
-            text = st.text_input("Enter Text to Add", "Sample Text")
-            position = st.slider("Text Position (X, Y)", 0, 1000, (50, 50))
-            font_size = st.slider("Font Size", 10, 100, 30)
-            color = st.color_picker("Pick a Color", "#FFFFFF")
-            color_rgb = tuple(int(color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
-            processed_image = add_text_overlay(processed_image, text, position, font_size, color_rgb)
 
         # Display Processed Image
         st.subheader("Processed Image")
