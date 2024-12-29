@@ -33,19 +33,11 @@ def home_page():
     st.title("🎨 Advanced Image Tool Suite 🌟")
     st.subheader("Enhance and Compress Images with Ease")
 
-    col1, col2 = st.columns(2)
+    st.header("🔧 Image Modifier")
+    st.write("Apply effects and transformations to your images via the sidebar.")
 
-    with col1:
-        st.header("🔧 Image Modifier")
-        st.write("Apply effects and transformations to your images.")
-        if st.button("Go to Image Modifier"):
-            st.session_state.page = "modifier"
-
-    with col2:
-        st.header("🗜️ Image Compressor")
-        st.write("Compress images and reduce file size.")
-        if st.button("Go to Image Compressor"):
-            st.session_state.page = "compressor"
+    st.header("🗜️ Image Compressor")
+    st.write("Compress images and reduce file size via the sidebar.")
 
 # Image Modifier Page
 def modify_image():
@@ -102,10 +94,6 @@ def modify_image():
             file_name="processed_image.png",
             mime="image/png",
         )
-    
-    # Back to Home Button
-    if st.button("⬅️ Back to Home"):
-        st.session_state.page = "home"
 
 # Image Compressor Page
 def compress_image_section():
@@ -136,34 +124,18 @@ def compress_image_section():
             file_name="compressed_image.jpg",
             mime="image/jpeg",
         )
-    
-    # Back to Home Button
-    if st.button("⬅️ Back to Home"):
-        st.session_state.page = "home"
 
-# Page Navigation
-def navigate():
-    if "page" not in st.session_state:
-        st.session_state.page = "home"
-
+# Main Navigation
+def main():
     st.sidebar.title("Navigation")
-    st.sidebar.radio("Go to:", ["Home", "Image Modifier", "Image Compressor"], key="sidebar_navigation")
+    selected_page = st.sidebar.radio("Go to:", ["Home", "Image Modifier", "Image Compressor"])
 
-    # Sidebar navigation
-    if st.session_state.sidebar_navigation == "Home":
-        st.session_state.page = "home"
-    elif st.session_state.sidebar_navigation == "Image Modifier":
-        st.session_state.page = "modifier"
-    elif st.session_state.sidebar_navigation == "Image Compressor":
-        st.session_state.page = "compressor"
-
-    # Render the appropriate page
-    if st.session_state.page == "home":
+    if selected_page == "Home":
         home_page()
-    elif st.session_state.page == "modifier":
+    elif selected_page == "Image Modifier":
         modify_image()
-    elif st.session_state.page == "compressor":
+    elif selected_page == "Image Compressor":
         compress_image_section()
 
 if __name__ == "__main__":
-    navigate()
+    main()
