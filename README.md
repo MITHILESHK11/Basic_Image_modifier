@@ -29,6 +29,12 @@ This web-based application allows users to upload images and perform a variety o
 
 ---
 
+## Try the App
+
+🌐 **[Try the App Here](https://hotelchatbot-79v9xgaadawlkgzoqoycwg.streamlit.app/)**  
+
+---
+
 ## Requirements
 
 ### Prerequisites
