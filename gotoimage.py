@@ -28,27 +28,26 @@ def compress_image(image, quality):
     buffer.seek(0)
     return buffer
 
-# Main Functionality
-def main():
+# Home Page UI
+def home_page():
     st.title("🎨 Advanced Image Tool Suite 🌟")
     st.subheader("Enhance and Compress Images with Ease")
 
-    # Home Page with Two Options
-    st.markdown("---")
     col1, col2 = st.columns(2)
 
     with col1:
         st.header("🔧 Image Modifier")
         st.write("Apply effects and transformations to your images.")
         if st.button("Go to Image Modifier"):
-            modify_image()
+            st.session_state.page = "modifier"
 
     with col2:
         st.header("🗜️ Image Compressor")
         st.write("Compress images and reduce file size.")
         if st.button("Go to Image Compressor"):
-            compress_image_section()
+            st.session_state.page = "compressor"
 
+# Image Modifier Page
 def modify_image():
     st.title("🔧 Image Modifier")
     st.write("Upload an image and apply effects.")
@@ -104,6 +103,7 @@ def modify_image():
             mime="image/png",
         )
 
+# Image Compressor Page
 def compress_image_section():
     st.title("🗜️ Image Compressor")
     st.write("Upload an image and compress it.")
@@ -133,5 +133,17 @@ def compress_image_section():
             mime="image/jpeg",
         )
 
+# Page Navigation
+def navigate():
+    if "page" not in st.session_state:
+        st.session_state.page = "home"
+
+    if st.session_state.page == "home":
+        home_page()
+    elif st.session_state.page == "modifier":
+        modify_image()
+    elif st.session_state.page == "compressor":
+        compress_image_section()
+
 if __name__ == "__main__":
-    main()
+    navigate()
