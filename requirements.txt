@@ -1,6 +1,4 @@
-﻿streamlit
-opencv-python
+streamlit
+opencv-python-headless
 numpy
 pillow
-opencv-python-headless
-libGL
