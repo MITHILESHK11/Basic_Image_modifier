@@ -102,6 +102,10 @@ def modify_image():
             file_name="processed_image.png",
             mime="image/png",
         )
+    
+    # Back to Home Button
+    if st.button("⬅️ Back to Home"):
+        st.session_state.page = "home"
 
 # Image Compressor Page
 def compress_image_section():
@@ -132,11 +136,26 @@ def compress_image_section():
             file_name="compressed_image.jpg",
             mime="image/jpeg",
         )
+    
+    # Back to Home Button
+    if st.button("⬅️ Back to Home"):
+        st.session_state.page = "home"
 
 # Page Navigation
 def navigate():
     if "page" not in st.session_state:
         st.session_state.page = "home"
+
+    st.sidebar.title("Navigation")
+    st.sidebar.radio("Go to:", ["Home", "Image Modifier", "Image Compressor"], key="sidebar_navigation")
+
+    # Sidebar navigation
+    if st.session_state.sidebar_navigation == "Home":
+        st.session_state.page = "home"
+    elif st.session_state.sidebar_navigation == "Image Modifier":
+        st.session_state.page = "modifier"
+    elif st.session_state.sidebar_navigation == "Image Compressor":
+        st.session_state.page = "compressor"
 
     if st.session_state.page == "home":
         home_page()
