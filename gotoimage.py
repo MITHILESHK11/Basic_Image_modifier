@@ -157,6 +157,7 @@ def navigate():
     elif st.session_state.sidebar_navigation == "Image Compressor":
         st.session_state.page = "compressor"
 
+    # Render the appropriate page
     if st.session_state.page == "home":
         home_page()
     elif st.session_state.page == "modifier":
