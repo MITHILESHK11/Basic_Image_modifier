@@ -32,15 +32,22 @@ def flip_image(image, mode):
 
 # Helper Functions for Image Compressor
 def compress_image(image, quality, format_type):
-    buffer = io.BytesIO()
+    # Convert PIL image to a NumPy array for OpenCV processing (if needed)
+    image = np.array(image)
+    
+    # If the image is in RGB mode (PIL), convert it to BGR (OpenCV)
+    if image.ndim == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+    # Convert back to PIL Image for saving and compression
     pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    buffer = io.BytesIO()
     pil_image.save(buffer, format=format_type, quality=quality)
     buffer.seek(0)
     return buffer
 
 def resize_image(image, width, height):
-    return cv2.resize(image, (width, height))
-
+    return image.resize((width, height))
 # Image Modifier Page
 def modify_image():
     st.title("🔧 Advanced Image Modifier")
@@ -143,13 +150,15 @@ def compress_image_section():
 
         # Compression Settings
         quality = st.slider("Compression Quality (%)", 10, 100, 85)
+        
+        # Resize Option
         resize_option = st.checkbox("Resize Image Before Compression?")
         if resize_option:
             width = st.slider("Width", 10, 1000, 500)
             height = st.slider("Height", 10, 1000, 500)
-            image = resize_image(np.array(image), width, height)
+            image = resize_image(image, width, height)
 
-        # Select file format
+        # Select file format for saving
         format_type = st.selectbox("Choose File Format for Compression", ["JPEG", "PNG"])
 
         # Compress Image
